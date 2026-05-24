@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Manrope, Geist } from "next/font/google";
+import { IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/context/auth-context";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -32,9 +31,13 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={cn("h-full", "antialiased", manrope.variable, mono.variable, "font-sans", geist.variable)}
+      className={`${manrope.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">{children}</body>
+      <body className="min-h-full bg-background text-foreground">
+        <AuthProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
