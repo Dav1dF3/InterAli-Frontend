@@ -3,23 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
-import { MoreHorizontal } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { SectionHeading } from "@/components/site/section-heading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listDonorClaims, listMyClaims, updateClaimStatus } from "@/lib/api";
+import { listDonorClaims, listMyClaims, listVolunteerClaims, updateClaimStatus } from "@/lib/api";
 import { getStoredSession } from "@/lib/auth-storage";
 import type { Claim, ClaimStatus } from "@/lib/types";
 import { formatRelativeTime, getClaimStatusLabel, getClaimStatusVariant } from "@/lib/private-data";
@@ -30,6 +22,7 @@ export default function DashboardClaimsPage() {
   const user = session?.user ?? null;
   const token = session?.access_token ?? null;
   const isReceiver = user?.role === "receiver";
+  const isVolunteer = user?.role === "volunteer";
   const isAdmin = user?.role === "admin";
 
   const [tab, setTab] = useState("all");
@@ -45,6 +38,9 @@ export default function DashboardClaimsPage() {
     async () => {
       if (isReceiver) {
         return listMyClaims();
+      }
+      if (isVolunteer) {
+        return listVolunteerClaims();
       }
       return listDonorClaims();
     }
@@ -80,8 +76,16 @@ export default function DashboardClaimsPage() {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
       <SectionHeading
         eyebrow="Reclamos"
-        title="Reclamos y seguimiento"
-        description="Consulta el estado de cada reclamo y actúa sólo cuando corresponda."
+        title={isReceiver ? "Mis solicitudes" : isVolunteer ? "Mis asignaciones" : isAdmin ? "Reclamos globales" : "Reclamos de mis publicaciones"}
+        description={
+          isReceiver
+            ? "Consulta el estado de cada solicitud que hiciste."
+            : isVolunteer
+              ? "Acepta, rechaza y completa solo las asignaciones que te tocaron."
+              : isAdmin
+                ? "Revisa el estado global de todos los reclamos."
+                : "Aprueba o rechaza los reclamos ligados a tus publicaciones."
+        }
       />
 
       {errorMessage ? (
@@ -108,18 +112,30 @@ export default function DashboardClaimsPage() {
         <CardHeader>
           <CardDescription>
             {isReceiver
-              ? "Tus reclamos"
+              ? "Tus solicitudes"
               : isAdmin
                 ? "Reclamos globales"
-                : "Reclamos de tus publicaciones"}
+                : isVolunteer
+                  ? "Tus asignaciones"
+                  : "Reclamos de tus publicaciones"}
           </CardDescription>
           <CardTitle>
-            {isReceiver ? "Estado de tus reclamos" : isAdmin ? "Gestionar reclamos globales" : "Gestionar reclamos de tus publicaciones"}
+            {isReceiver
+              ? "Seguimiento de solicitudes"
+              : isAdmin
+                ? "Gestionar reclamos globales"
+                : isVolunteer
+                  ? "Gestionar asignaciones"
+                  : "Gestionar reclamos de tus publicaciones"}
           </CardTitle>
           <p className="text-sm leading-6 text-muted-foreground">
             {isReceiver
-              ? "Consulta el estado y la última actualización de cada reclamo."
-              : "Revisa el estado general y actúa sólo cuando corresponda."}
+              ? "Consulta el estado y la última actualización de cada solicitud."
+              : isVolunteer
+                ? "Revisa lo que se te asignó, acepta o rechaza, y confirma recogida o entrega."
+                : isAdmin
+                  ? "Observa todo el flujo para coordinar sin intervenir como donante."
+                  : "Revisa el estado general y actúa sólo cuando corresponda."}
           </p>
         </CardHeader>
         <CardContent>
@@ -154,28 +170,49 @@ export default function DashboardClaimsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={getClaimStatusVariant(claim.status)}>{getClaimStatusLabel(claim.status)}</Badge>
+                        {claim.volunteer ? <p className="mt-1 text-xs text-muted-foreground">Asignado a: {claim.volunteer.full_name ?? claim.volunteer.email}</p> : null}
                       </TableCell>
                       <TableCell>{formatRelativeTime(claim.updated_at)}</TableCell>
                       <TableCell className="text-right">
                         {isReceiver ? (
-                          <span className="text-xs text-muted-foreground">Solo lectura</span>
-                        ) : claim.status !== "pending" ? (
-                          <span className="text-xs text-muted-foreground">Ya resuelto</span>
-                        ) : (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="rounded-full" disabled={updatingClaimId === claim.id}>
-                                <MoreHorizontal className="size-4" />
-                                <span className="sr-only">Acciones</span>
+                          <span className="text-xs text-muted-foreground">Solo seguimiento</span>
+                        ) : isVolunteer ? (
+                          <div className="flex items-center justify-end gap-2">
+                            {claim.status === "approved" && claim.volunteer_accepted_at === null ? (
+                              <Button size="sm" variant="outline" onClick={() => void handleUpdateClaimStatus(claim.id, "approved")} disabled={updatingClaimId === claim.id}>
+                                Aceptar asignación
                               </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-52">
-                              <DropdownMenuItem onClick={() => void handleUpdateClaimStatus(claim.id, "approved")}>Aprobar</DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => void handleUpdateClaimStatus(claim.id, "rejected")}>Rechazar</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => void handleUpdateClaimStatus(claim.id, "cancelled")}>Cancelar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            ) : null}
+                            {claim.status === "approved" ? (
+                              <Button size="sm" variant="outline" onClick={() => void handleUpdateClaimStatus(claim.id, "picked_up")} disabled={updatingClaimId === claim.id}>
+                                Confirmar recogida
+                              </Button>
+                            ) : null}
+                            {claim.status === "picked_up" ? (
+                              <Button size="sm" onClick={() => void handleUpdateClaimStatus(claim.id, "delivered")} disabled={updatingClaimId === claim.id}>
+                                Confirmar entrega
+                              </Button>
+                            ) : null}
+                            {claim.status === "approved" ? (
+                              <Button size="sm" variant="ghost" onClick={() => void handleUpdateClaimStatus(claim.id, "cancelled")} disabled={updatingClaimId === claim.id}>
+                                Rechazar asignación
+                              </Button>
+                            ) : null}
+                            {claim.status !== "approved" && claim.status !== "picked_up" ? (
+                              <span className="text-xs text-muted-foreground">Sin acción pendiente</span>
+                            ) : null}
+                          </div>
+                        ) : claim.status !== "pending" ? (
+                          <span className="text-xs text-muted-foreground">Ya gestionado</span>
+                        ) : (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" className="rounded-full" onClick={() => void handleUpdateClaimStatus(claim.id, "approved")} disabled={updatingClaimId === claim.id}>
+                              Aprobar reclamo
+                            </Button>
+                            <Button variant="ghost" size="sm" className="rounded-full" onClick={() => void handleUpdateClaimStatus(claim.id, "rejected")} disabled={updatingClaimId === claim.id}>
+                              Rechazar reclamo
+                            </Button>
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>

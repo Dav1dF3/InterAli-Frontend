@@ -27,24 +27,32 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 
-const navigation = [
-  { href: "/dashboard", label: "Resumen" },
-  { href: "/dashboard/food-listings", label: "Mis publicaciones" },
-  { href: "/dashboard/claims", label: "Solicitudes" },
-];
-
 export function PrivateHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const { user, logoutAction } = useAuth();
   const isDonor = user?.role === "donor";
   const isReceiver = user?.role === "receiver";
+  const isVolunteer = user?.role === "volunteer";
   const isAdmin = user?.role === "admin";
 
   function handleLogout() {
     logoutAction();
     router.replace("/");
   }
+
+  const homeLabel = isAdmin ? "Coordinación" : isDonor ? "Publicaciones" : isVolunteer ? "Asignaciones" : "Solicitudes";
+  const primaryActionLabel = isDonor ? "Nueva publicación" : isAdmin ? "Revisar publicaciones" : isVolunteer ? "Ver asignaciones" : "Ver publicaciones";
+  const claimsLabel = isReceiver ? "Mis solicitudes" : isVolunteer ? "Mis asignaciones" : isAdmin ? "Solicitudes globales" : "Solicitudes";
+  const navigation = [
+    { href: "/dashboard", label: "Resumen" },
+    {
+      href: "/dashboard/food-listings",
+      label: isDonor ? "Mis publicaciones" : isVolunteer ? "Publicaciones disponibles" : isReceiver ? "Comidas disponibles" : "Publicaciones globales",
+    },
+    { href: "/dashboard/claims", label: claimsLabel },
+    { href: "/dashboard/impact", label: isAdmin ? "Coordinación e impacto" : "Historial" },
+  ];
 
   return (
     <header className="border-b border-border/60 bg-background/90 backdrop-blur-xl">
@@ -55,7 +63,7 @@ export function PrivateHeader() {
           </Avatar>
           <div className="leading-tight">
             <p className="text-sm font-semibold tracking-tight text-foreground">Tu espacio</p>
-            <p className="text-xs text-muted-foreground">{isAdmin ? "Vista general" : isDonor ? "Publicaciones" : "Explorar comida"}</p>
+            <p className="text-xs text-muted-foreground">{homeLabel}</p>
           </div>
         </Link>
 
@@ -70,7 +78,7 @@ export function PrivateHeader() {
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="hidden rounded-full px-3 py-1 sm:inline-flex">
             <ShieldCheck className="mr-2 size-3.5" />
-            {isAdmin ? "Coordinación" : isDonor ? "Publica" : isReceiver ? "Solicita" : "Tu espacio"}
+            {isAdmin ? "Coordinación" : isDonor ? "Donante" : isVolunteer ? "Voluntario" : isReceiver ? "Receptor" : "Tu espacio"}
           </Badge>
 
           <DropdownMenu>
@@ -86,11 +94,11 @@ export function PrivateHeader() {
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/food-listings">
                   <Plus className="mr-2 size-4" />
-                  {isDonor ? "Nueva publicación" : isAdmin ? "Ver publicaciones" : "Ver publicaciones"}
+                  {primaryActionLabel}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/claims">{isReceiver ? "Ver solicitudes" : "Revisar solicitudes"}</Link>
+                <Link href="/dashboard/claims">{claimsLabel}</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleLogout()}>
@@ -123,7 +131,7 @@ export function PrivateHeader() {
                   </Button>
                 ))}
                 <Button asChild className="justify-start rounded-2xl" onClick={() => setMobileOpen(false)}>
-                  <Link href="/dashboard/food-listings">{isDonor ? "Nueva publicación" : isAdmin ? "Ver publicaciones" : "Ver publicaciones"}</Link>
+                  <Link href="/dashboard/food-listings">{primaryActionLabel}</Link>
                 </Button>
                 <Button variant="outline" className="justify-start rounded-2xl" onClick={() => { setMobileOpen(false); handleLogout(); }}>
                   Salir

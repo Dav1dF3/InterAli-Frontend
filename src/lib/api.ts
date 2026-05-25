@@ -8,7 +8,7 @@ import type {
   UpdateFoodListingRequest,
 } from "@/lib/types";
 import { httpClient } from "@/api/http-client";
-import { createClaim, getDonorClaims, getMyClaims, patchClaimStatus } from "@/services/claims.service";
+import { createClaim, getDonorClaims, getMyClaims, getVolunteerClaims, patchClaimStatus } from "@/services/claims.service";
 import { getMe, login, register } from "@/services/auth.service";
 import {
   createListing,
@@ -65,6 +65,10 @@ export async function listMyClaims(params: { status?: ClaimStatus } = {}) {
 
 export async function listDonorClaims(params: { status?: ClaimStatus } = {}) {
   return getDonorClaims(params);
+}
+
+export async function listVolunteerClaims(params: { status?: ClaimStatus } = {}) {
+  return getVolunteerClaims(params);
 }
 
 export async function updateClaimStatus(claimId: string, payload: ClaimStatusUpdate) {

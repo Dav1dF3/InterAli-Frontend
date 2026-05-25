@@ -1,8 +1,8 @@
-export type UserRole = "donor" | "receiver" | "admin";
+export type UserRole = "donor" | "receiver" | "volunteer" | "admin";
 
 export type FoodListingStatus = "active" | "claimed" | "cancelled";
 
-export type ClaimStatus = "pending" | "approved" | "rejected" | "cancelled";
+export type ClaimStatus = "pending" | "approved" | "rejected" | "cancelled" | "picked_up" | "delivered";
 
 export interface UserPublic {
   id: string;
@@ -76,12 +76,19 @@ export interface Claim {
   id: string;
   food_listing_id: string;
   receiver_id: string;
+  volunteer_id: string | null;
   status: ClaimStatus;
+  volunteer_accepted_at: string | null;
+  pickup_confirmed_at: string | null;
+  delivered_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
   food_listing?: FoodListing | null;
+  receiver?: UserPublic | null;
+  volunteer?: UserPublic | null;
 }
 
 export interface ClaimStatusUpdate {
   status: ClaimStatus;
+  volunteer_id?: string | null;
 }

@@ -16,6 +16,11 @@ export async function getDonorClaims(params: { status?: ClaimStatus } = {}) {
   return data;
 }
 
+export async function getVolunteerClaims(params: { status?: ClaimStatus } = {}) {
+  const { data } = await httpClient.get<Claim[]>("/claims/volunteer", { params });
+  return data;
+}
+
 export async function patchClaimStatus(claimId: string, payload: ClaimStatusUpdate) {
   const { data } = await httpClient.patch<Claim>(`/claims/${claimId}/status`, payload);
   return data;

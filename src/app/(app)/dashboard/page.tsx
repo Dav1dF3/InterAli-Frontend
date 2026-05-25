@@ -7,9 +7,10 @@ import useSWR from "swr";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { DonorDashboard } from "@/components/dashboard/donor-dashboard";
 import { ReceiverDashboard } from "@/components/dashboard/receiver-dashboard";
-import { listDonorClaims, listFoodListings, listMyClaims } from "@/lib/api";
+import { listDonorClaims, listFoodListings, listMyClaims, listVolunteerClaims } from "@/lib/api";
 import { getStoredSession } from "@/lib/auth-storage";
 import type { Claim, FoodListing } from "@/lib/types";
+import { VolunteerDashboard } from "@/components/dashboard/volunteer-dashboard";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -38,6 +39,10 @@ export default function DashboardPage() {
       return listMyClaims();
     }
 
+    if (user?.role === "volunteer") {
+      return listVolunteerClaims();
+    }
+
     return listDonorClaims();
   });
 
@@ -50,6 +55,10 @@ export default function DashboardPage() {
 
   if (user?.role === "receiver") {
     return <ReceiverDashboard listings={listings} claims={claims} isLoading={isLoading} errorMessage={errorMessage} />;
+  }
+
+  if (user?.role === "volunteer") {
+    return <VolunteerDashboard listings={listings} claims={claims} isLoading={isLoading} errorMessage={errorMessage} />;
   }
 
   if (user?.role === "admin") {

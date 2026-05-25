@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GuestGuard } from "@/guards/guest-guard";
-import { getHealth } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

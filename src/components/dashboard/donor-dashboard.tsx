@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Claim, FoodListing } from "@/lib/types";
 import { formatRelativeTime, getClaimStatusLabel, getClaimStatusVariant, getListingStatusLabel, getListingStatusVariant } from "@/lib/private-data";
 
@@ -21,19 +19,24 @@ type DonorDashboardProps = {
 };
 
 export function DonorDashboard({ listings, claims, isLoading, errorMessage, isAdmin = false }: DonorDashboardProps) {
-  const ownedListings = listings;
-  const pendingClaims = claims.filter((claim) => claim.status === "pending");
-  const approvedClaims = claims.filter((claim) => claim.status === "approved");
+  const myListings = listings;
+  const activeListings = myListings.filter((listing) => listing.status === "active").length;
+  const resolvedClaims = claims.filter((claim) => claim.status === "delivered" || claim.status === "picked_up" || claim.status === "approved").length;
+  const title = isAdmin ? "Coordinación de publicaciones" : "Publicaciones y trazabilidad";
+  const description = isAdmin
+    ? "Supervisa publicaciones, reclamos y cierres operativos sin mezclar tareas de donante con tareas de coordinación."
+    : "Publica excedentes rápido, revisa lo que sigue activo y abre el historial para ver impacto.";
+  const primaryActionLabel = isAdmin ? "Abrir revisión global" : "Nueva publicación";
+  const secondaryActionLabel = isAdmin ? "Ver cola de reclamos" : "Ver historial e impacto";
+  const recentClaimsTitle = isAdmin ? "Movimientos de coordinación" : "Movimientos recientes";
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
       <div className="flex flex-col gap-3">
-        <Badge variant="outline" className="w-fit rounded-full px-3 py-1">{isAdmin ? "Admin / Donante" : "Donante"}</Badge>
+        <Badge variant="outline" className="w-fit rounded-full px-3 py-1">{isAdmin ? "Coordinación" : "Donante"}</Badge>
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight">Publicar y administrar</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Aquí el foco está en crear publicaciones, controlar su estado y responder reclamos sobre tus publicaciones.
-          </p>
+          <h1 className="text-4xl font-semibold tracking-tight">{title}</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">{description}</p>
         </div>
       </div>
 
@@ -44,20 +47,11 @@ export function DonorDashboard({ listings, claims, isLoading, errorMessage, isAd
         </Alert>
       ) : null}
 
-      <Alert className="border-primary/20 bg-primary/5">
-        <AlertTitle>Tu trabajo</AlertTitle>
-        <AlertDescription>
-          {isAdmin
-            ? "Como admin supervisas publicaciones y reclamos globales; como donante, gestionas sólo tus publicaciones."
-            : "Como donante publicas comida disponible y decides si un reclamo se aprueba, rechaza o cancela."}
-        </AlertDescription>
-      </Alert>
-
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         {[
-          { label: isAdmin ? "Publicaciones globales" : "Mis publicaciones", value: ownedListings.length, delta: "Publicaciones visibles" },
-          { label: "Reclamos pendientes", value: pendingClaims.length, delta: "Para revisar" },
-          { label: "Reclamos aprobados", value: approvedClaims.length, delta: "Confirmados" },
+          { label: "Publicaciones activas", value: activeListings, delta: "Listas para ser vistas" },
+          { label: "Total de publicaciones", value: myListings.length, delta: "Historial del negocio" },
+          { label: "Claims resueltos", value: resolvedClaims, delta: "Impacto operativo" },
         ].map((metric) => (
           <Card key={metric.label} className="border-border/70 bg-card/90 shadow-sm">
             <CardHeader>
@@ -69,96 +63,76 @@ export function DonorDashboard({ listings, claims, isLoading, errorMessage, isAd
         ))}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap gap-3">
         <Button asChild className="rounded-full">
-          <Link href="/dashboard/food-listings">
-            <Plus className="size-4" />
-            {isAdmin ? "Gestionar publicaciones" : "Nueva publicación"}
-          </Link>
+          <Link href="/dashboard/food-listings">{primaryActionLabel}</Link>
+        </Button>
+        <Button asChild variant="outline" className="rounded-full">
+          <Link href="/dashboard/impact">{secondaryActionLabel}</Link>
         </Button>
       </div>
 
-      <Tabs defaultValue="listings" className="w-full gap-6">
-        <TabsList variant="line" className="grid w-full grid-cols-2 justify-stretch gap-2 border-b border-border/60 pb-0">
-          <TabsTrigger value="listings" className="rounded-t-lg">Mis publicaciones</TabsTrigger>
-          <TabsTrigger value="claims" className="rounded-t-lg">Reclamos</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="listings" className="pt-6">
-          <Card className="border-border/70 bg-card/90">
-            <CardHeader>
-              <CardDescription>{isAdmin ? "Listado global" : "Tus publicaciones"}</CardDescription>
-              <CardTitle>{isAdmin ? "Publicaciones de toda la plataforma" : "Publicaciones activas y gestionables"}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+      <Card className="border-border/70 bg-card/90">
+        <CardHeader>
+          <CardDescription>Lo más reciente</CardDescription>
+          <CardTitle>Últimas publicaciones y movimientos</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-3xl border border-border/60 bg-background p-4">
+            <p className="text-sm font-medium text-foreground">Publicaciones recientes</p>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {myListings.slice(0, 5).map((listing) => (
+                  <TableRow key={listing.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">{listing.title}</p>
+                        <p className="text-xs text-muted-foreground">{formatRelativeTime(listing.created_at)}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getListingStatusVariant(listing.status)}>{getListingStatusLabel(listing.status)}</Badge>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {ownedListings.slice(0, 8).map((listing) => (
-                    <TableRow key={listing.id}>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <p className="font-medium">{listing.title}</p>
-                          <p className="text-xs text-muted-foreground">{listing.pickup_address}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>{listing.category ?? "General"}</TableCell>
-                      <TableCell>{listing.quantity}</TableCell>
-                      <TableCell>
-                        <Badge variant={getListingStatusVariant(listing.status)}>{getListingStatusLabel(listing.status)}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button asChild variant="ghost" size="sm" className="rounded-full">
-                          <Link href="/dashboard/food-listings">Ver</Link>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-        <TabsContent value="claims" className="pt-6">
-          <Card className="border-border/70 bg-card/90">
-            <CardHeader>
-              <CardDescription>Respuesta a reclamos</CardDescription>
-              <CardTitle>{isAdmin ? "Reclamos globales" : "Reclamos sobre tus publicaciones"}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Publicación</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Actualizado</TableHead>
+          <div className="rounded-3xl border border-border/60 bg-background p-4">
+            <p className="text-sm font-medium text-foreground">{recentClaimsTitle}</p>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Publicación</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {claims.slice(0, 5).map((claim) => (
+                  <TableRow key={claim.id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="font-medium">{claim.food_listing?.title ?? claim.food_listing_id}</p>
+                        <p className="text-xs text-muted-foreground">{formatRelativeTime(claim.updated_at)}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getClaimStatusVariant(claim.status)}>{getClaimStatusLabel(claim.status)}</Badge>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {claims.slice(0, 8).map((claim) => (
-                    <TableRow key={claim.id}>
-                      <TableCell className="font-medium">{claim.food_listing?.title ?? claim.food_listing_id}</TableCell>
-                      <TableCell>
-                        <Badge variant={getClaimStatusVariant(claim.status)}>{getClaimStatusLabel(claim.status)}</Badge>
-                      </TableCell>
-                      <TableCell>{formatRelativeTime(claim.updated_at)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

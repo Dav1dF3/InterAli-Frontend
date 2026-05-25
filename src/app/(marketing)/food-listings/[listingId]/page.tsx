@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
     notFound();
   }
 
-  const isExpired = listing.expiration_date ? new Date(listing.expiration_date).getTime() < Date.now() : false;
-  const canClaim = listing.status === "active" && !isExpired;
+  const canClaim = listing.status === "active";
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
@@ -63,7 +63,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
             <Badge variant="outline" className="rounded-full px-3 py-1 uppercase tracking-[0.18em]">
               {listing.category ?? "Categoría general"}
             </Badge>
-            <Badge variant={listing.status === "active" && !isExpired ? "success" : listing.status === "claimed" ? "warning" : "destructive"} className="rounded-full px-3 py-1">
+            <Badge variant={listing.status === "active" ? "success" : listing.status === "claimed" ? "warning" : "destructive"} className="rounded-full px-3 py-1">
               {getStatusLabel(listing.status)}
             </Badge>
           </div>
@@ -99,9 +99,9 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 </p>
               ) : null}
               <div className="mt-6 flex flex-wrap gap-3">
-                <ListingReserveButton listingId={listing.id} canClaim={canClaim} />
+                <ListingReserveButton listingId={listing.id} canClaim={canClaim} expirationDate={listing.expiration_date} />
                 <Button asChild variant="outline" className="rounded-full">
-                  <a href="/food-listings">Volver al catálogo</a>
+                  <Link href="/food-listings">Volver al catálogo</Link>
                 </Button>
               </div>
             </div>
@@ -112,7 +112,7 @@ export default async function ListingDetailPage({ params }: ListingDetailPagePro
                 <p><span className="font-medium text-foreground">Publicado:</span> {formatDate(listing.created_at)}</p>
                 <p><span className="font-medium text-foreground">Estado actual:</span> {getStatusLabel(listing.status)}</p>
                 <p><span className="font-medium text-foreground">Punto de retiro:</span> {listing.pickup_address ?? "Se compartirá al confirmar"}</p>
-                <p><span className="font-medium text-foreground">Aviso:</span> {isExpired ? "Esta publicación ya venció." : "Esta publicación sigue disponible si aparece como activa."}</p>
+                <p><span className="font-medium text-foreground">Aviso:</span> Esta publicación sigue disponible si aparece como activa; la disponibilidad final se verifica al reservar.</p>
               </div>
             </div>
           </div>

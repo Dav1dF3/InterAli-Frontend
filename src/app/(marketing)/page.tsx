@@ -28,17 +28,16 @@ export default async function MarketingHomePage() {
         <div className="space-y-8">
           <div className="flex flex-wrap items-center gap-3">
             <Badge variant="secondary" className="rounded-full px-3 py-1">
-              Donación de alimentos
+              Redistribución local de alimentos
             </Badge>
-            <span className="text-sm text-muted-foreground">Un flujo simple para publicar, reclamar y coordinar entregas.</span>
+            <span className="text-sm text-muted-foreground">Un flujo simple para publicar excedentes, moverlos y confirmar la entrega.</span>
           </div>
           <div className="space-y-5">
             <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl lg:text-7xl">
-              Conecta excedentes de comida con personas que sí los necesitan.
+              Conecta comida disponible con quienes realmente la necesitan en Ibagué.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              InterAli ordena la oferta pública de alimentos y facilita la publicación y el reclamo con una interfaz
-              directa, consistente y fácil de usar.
+              InterAli ayuda a donar, recoger y entregar alimentos sin perder tiempo en procesos pesados ni pantallas innecesarias.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -46,24 +45,24 @@ export default async function MarketingHomePage() {
               <Link href="/register">Empezar ahora</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link href="/food-listings">Ver comidas disponibles</Link>
+              <Link href="/food-listings">Ver publicaciones</Link>
             </Button>
           </div>
           <div className="rounded-2xl border border-border/70 bg-card/80 px-4 py-4 text-sm leading-6 text-muted-foreground">
-            Publica, reclama y sigue el estado de cada alimento sin pasos innecesarios.
+            Donante, receptor y voluntario trabajando sobre el mismo flujo, con confirmación y trazabilidad simple.
           </div>
         </div>
 
         <Card className="overflow-hidden border-border/70 bg-card/90 shadow-xl">
           <CardHeader className="space-y-3 border-b border-border/60 bg-muted/40">
-            <CardDescription>Así se ve el recorrido</CardDescription>
-            <CardTitle className="text-2xl">Una experiencia clara desde el primer vistazo</CardTitle>
+            <CardDescription>Cómo funciona</CardDescription>
+            <CardTitle className="text-2xl">Tres pasos, sin vueltas</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 p-6">
             {[
-              ["Publica", "Agrega título, descripción, cantidad, categoría y lugar de retiro."],
-              ["Reclama", "Revisa que la publicación siga disponible antes de pedirla."],
-              ["Sigue el avance", "Cada solicitud cambia de forma automática según su estado."],
+              ["Donante", "Publica el excedente con cantidad, fecha límite y ubicación."],
+              ["Voluntario", "Acepta la recogida y confirma el movimiento."],
+              ["Receptor", "Recibe y confirma la entrega."],
             ].map(([title, description]) => (
               <div key={title} className="rounded-2xl border border-border/60 bg-background px-4 py-4">
                 <p className="font-semibold text-foreground">{title}</p>
@@ -76,12 +75,12 @@ export default async function MarketingHomePage() {
 
       <section className="space-y-8">
         <SectionHeading
-          eyebrow="Disponibles ahora"
-          title="Alimentos publicados recientemente"
-          description="Aquí aparecen las publicaciones más recientes para verlas de un vistazo."
+          eyebrow="Publicaciones"
+          title="Excedentes recientes"
+          description="Lo último publicado para que alguien lo tome sin fricción."
           action={
             <Button asChild variant="outline">
-              <Link href="/food-listings">Abrir catálogo completo</Link>
+              <Link href="/food-listings">Ver todo</Link>
             </Button>
           }
         />
@@ -94,10 +93,9 @@ export default async function MarketingHomePage() {
       </section>
 
       <section className="rounded-3xl border border-border/70 bg-card/90 p-6">
-        <p className="text-sm font-medium text-foreground">Pensado para usarlo sin vueltas</p>
+        <p className="text-sm font-medium text-foreground">Pensado para una operación real</p>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
-          Quien publica comparte comida disponible. Quien necesita comida la revisa, la solicita y sigue su avance.
-          Todo está pensado para ser claro y directo.
+          La prioridad es mover alimentos rápido, con pocas pantallas y seguimiento suficiente para validar el impacto.
         </p>
       </section>
     </div>

@@ -13,7 +13,7 @@ import { GuestGuard } from "@/guards/guest-guard";
 import { useAuth } from "@/hooks/use-auth";
 import type { UserRole } from "@/lib/types";
 
-const roles: Exclude<UserRole, "admin">[] = ["receiver", "donor"];
+const roles: Exclude<UserRole, "admin">[] = ["receiver", "donor", "volunteer"];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -129,7 +129,7 @@ export default function RegisterPage() {
                   onClick={() => setRole(item)}
                   className="rounded-full"
                 >
-                  {item === "donor" ? "Publica" : "Solicita"}
+                  {item === "donor" ? "Donante" : item === "volunteer" ? "Voluntario" : "Receptor"}
                 </Button>
               ))}
             </div>

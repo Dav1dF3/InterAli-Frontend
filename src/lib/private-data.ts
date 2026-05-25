@@ -10,7 +10,7 @@ export const privateClaims: Claim[] = [];
 
 export const listingCategoryOptions = ["Todas", "Granos", "Frutas", "Preparados", "Panadería"];
 
-export const claimStatusOptions = ["Todos", "pending", "approved", "rejected", "cancelled"];
+export const claimStatusOptions = ["Todos", "pending", "approved", "picked_up", "delivered", "rejected", "cancelled"];
 
 export function formatRelativeTime(value: string) {
   return new Intl.DateTimeFormat("es-ES", {
@@ -49,6 +49,10 @@ export function getClaimStatusLabel(status: Claim["status"]) {
       return "Rechazado";
     case "cancelled":
       return "Cancelado";
+    case "picked_up":
+      return "Recogido";
+    case "delivered":
+      return "Entregado";
     default:
       return "Pendiente";
   }
@@ -62,6 +66,10 @@ export function getClaimStatusVariant(status: Claim["status"]) {
       return "destructive";
     case "cancelled":
       return "warning";
+    case "picked_up":
+      return "secondary";
+    case "delivered":
+      return "success";
     default:
       return "outline";
   }

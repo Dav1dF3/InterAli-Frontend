@@ -84,6 +84,7 @@ export default function DashboardFoodListingsPage() {
   const token = session?.access_token ?? null;
   const isDonor = user?.role === "donor";
   const isReceiver = user?.role === "receiver";
+  const isVolunteer = user?.role === "volunteer";
   const isAdmin = user?.role === "admin";
 
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "claimed" | "cancelled">("all");
@@ -213,13 +214,15 @@ export default function DashboardFoodListingsPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <SectionHeading
           eyebrow={isDonor ? "Mis publicaciones" : isAdmin ? "Administración global" : "Comidas disponibles"}
-          title={isDonor ? "Administración de publicaciones" : isAdmin ? "Administración total de publicaciones" : "Explorar y reclamar alimentos"}
+          title={isDonor ? "Administración de publicaciones" : isAdmin ? "Administración total de publicaciones" : isVolunteer ? "Recogidas asignadas" : "Explorar y reclamar alimentos"}
           description={
             isDonor
               ? "Como donante puedes crear, cancelar/reactivar y eliminar tus publicaciones."
               : isAdmin
                 ? "Como admin puedes revisar, cancelar/reactivar y eliminar cualquier publicación."
-              : "Como receptor puedes revisar publicaciones activas y reclamarlas."
+              : isVolunteer
+                ? "Como voluntario sólo debes revisar lo asignado y confirmar recogida o entrega desde el flujo de reclamos."
+                : "Como receptor puedes revisar publicaciones activas y reclamarlas."
           }
         />
 
@@ -358,7 +361,7 @@ export default function DashboardFoodListingsPage() {
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <CardDescription>Filtros rápidos</CardDescription>
-              <CardTitle>Refina por estado y categoría</CardTitle>
+              <CardTitle>Filtra por estado y categoría</CardTitle>
             </div>
             <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
               {isLoading ? "Cargando..." : `${filteredListings.length} resultados visibles`}
@@ -481,6 +484,8 @@ export default function DashboardFoodListingsPage() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => void handleDeleteListing(listing.id)}>Eliminar</DropdownMenuItem>
                               </>
+                            ) : isVolunteer ? (
+                              <DropdownMenuItem disabled>Solo seguimiento operativo</DropdownMenuItem>
                             ) : (
                               rejectedListingIds.has(listing.id) ? (
                                 <DropdownMenuItem disabled>Pedido rechazado</DropdownMenuItem>

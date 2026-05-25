@@ -5,7 +5,8 @@ import { clearSession, getAccessToken } from "@/lib/auth-storage";
 const DEFAULT_BACKEND_URL = "http://localhost:8000";
 
 function getBackendBaseUrl() {
-  return (process.env.NEXT_PUBLIC_BACKEND_URL ?? DEFAULT_BACKEND_URL).replace(/\/$/, "");
+  const backendUrl = (process.env.NEXT_PUBLIC_BACKEND_URL ?? DEFAULT_BACKEND_URL).replace(/\/$/, "");
+  return backendUrl;
 }
 
 export const httpClient = axios.create({
