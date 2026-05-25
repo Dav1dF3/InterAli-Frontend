@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { MoreHorizontal, Plus } from "lucide-react";
 
@@ -46,6 +47,7 @@ import {
   createFoodListing,
   deleteFoodListing,
   listFoodListings,
+  listMyClaims,
   updateFoodListing,
 } from "@/lib/api";
 import { getStoredSession } from "@/lib/auth-storage";
@@ -76,6 +78,7 @@ function toIsoFromDateAndTime(date: Date | null, time: string) {
 
 export default function DashboardFoodListingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const session = typeof window !== "undefined" ? getStoredSession() : null;
   const user = session?.user ?? null;
   const token = session?.access_token ?? null;
@@ -92,6 +95,9 @@ export default function DashboardFoodListingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<"table" | "timeline" | "reserve">(() =>
+    searchParams.get("tab") === "reserve" ? "reserve" : "table"
+  );
 
   useEffect(() => {
     if (!session) router.replace("/login");
@@ -105,12 +111,21 @@ export default function DashboardFoodListingsPage() {
     }
   );
 
+  const { data: claimsData } = useSWR(isReceiver && session ? ["dashboard-food-listings-claims"] : null, async () => {
+    return listMyClaims();
+  });
+
   if (!session) return null;
 
   const listings: FoodListing[] = data ?? [];
   const pageSize = 6;
 
   const roleListings = isDonor ? listings.filter((listing) => listing.donor_id === user.id) : listings;
+  const rejectedListingIds = new Set(
+    (isReceiver ? claimsData ?? [] : [])
+      .filter((claim) => claim.status === "rejected")
+      .map((claim) => claim.food_listing_id)
+  );
 
   const filteredListings = roleListings.filter((listing) => {
     const matchesStatus = statusFilter === "all" || listing.status === statusFilter;
@@ -123,6 +138,9 @@ export default function DashboardFoodListingsPage() {
 
   const totalPages = Math.max(1, Math.ceil(filteredListings.length / pageSize));
   const paginatedListings = filteredListings.slice((page - 1) * pageSize, page * pageSize);
+  const reserveListingId = searchParams.get("listing");
+  const reserveListings = roleListings.filter((listing) => listing.status === "active");
+  const selectedReserveListing = reserveListingId ? reserveListings.find((listing) => listing.id === reserveListingId) ?? null : null;
 
   async function handleCreateListing() {
     if (!token) return;
@@ -174,6 +192,12 @@ export default function DashboardFoodListingsPage() {
       router.push("/login");
       return;
     }
+
+    if (rejectedListingIds.has(listingId)) {
+      setError("Este pedido ya fue rechazado y no se puede volver a pedir.");
+      return;
+    }
+
     try {
       await claimFoodListing(listingId);
       await mutate();
@@ -401,10 +425,11 @@ export default function DashboardFoodListingsPage() {
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="table" className="w-full gap-6">
-            <TabsList variant="line" className="grid w-full grid-cols-2 justify-stretch gap-2 border-b border-border/60 pb-0">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="w-full gap-6">
+            <TabsList variant="line" className="grid w-full grid-cols-3 justify-stretch gap-2 border-b border-border/60 pb-0">
               <TabsTrigger value="table" className="rounded-t-lg">Tabla</TabsTrigger>
               <TabsTrigger value="timeline" className="rounded-t-lg">Contexto</TabsTrigger>
+              <TabsTrigger value="reserve" className="rounded-t-lg">Reservar</TabsTrigger>
             </TabsList>
 
             <TabsContent value="table" className="pt-6">
@@ -457,7 +482,11 @@ export default function DashboardFoodListingsPage() {
                                 <DropdownMenuItem onClick={() => void handleDeleteListing(listing.id)}>Eliminar</DropdownMenuItem>
                               </>
                             ) : (
-                              <DropdownMenuItem onClick={() => void handleClaim(listing.id)}>Reclamar</DropdownMenuItem>
+                              rejectedListingIds.has(listing.id) ? (
+                                <DropdownMenuItem disabled>Pedido rechazado</DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => void handleClaim(listing.id)}>Reclamar</DropdownMenuItem>
+                              )
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -504,6 +533,65 @@ export default function DashboardFoodListingsPage() {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="reserve" className="pt-6">
+              <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+                <Card className="border-border/70 bg-card/90">
+                  <CardHeader>
+                    <CardDescription>Reserva rápida</CardDescription>
+                    <CardTitle>Elige la comida que quieres pedir</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm leading-7 text-muted-foreground">
+                    <p>
+                      Si vienes desde una publicación pública, esta es la sección donde puedes seguir con el pedido.
+                    </p>
+                    {selectedReserveListing ? (
+                      <div className="rounded-3xl border border-primary/20 bg-primary/5 p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Seleccionada desde la vista pública</p>
+                        <p className="mt-2 text-base font-medium text-foreground">{selectedReserveListing.title}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{selectedReserveListing.pickup_address}</p>
+                      </div>
+                    ) : null}
+                  </CardContent>
+                </Card>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {reserveListings.slice(0, 6).map((listing) => (
+                    <Card key={listing.id} className={listing.id === reserveListingId ? "border-primary/40 bg-primary/5" : "border-border/70 bg-card/90"}>
+                      <CardHeader>
+                        <CardDescription>{listing.category ?? "General"}</CardDescription>
+                        <CardTitle className="text-xl">{listing.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-sm leading-6 text-muted-foreground">{listing.description ?? "Sin descripción"}</p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-2xl border border-border/60 bg-background px-4 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Cantidad</p>
+                            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{listing.quantity}</p>
+                          </div>
+                          <div className="rounded-2xl border border-border/60 bg-background px-4 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Retiro</p>
+                            <p className="mt-2 text-sm text-foreground">{listing.pickup_address ?? "Se compartirá al confirmar"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between gap-3 pt-2">
+                          <Badge variant={getListingStatusVariant(listing.status)}>{getListingStatusLabel(listing.status)}</Badge>
+                          {rejectedListingIds.has(listing.id) ? (
+                            <Button variant="outline" className="rounded-full" disabled>
+                              Pedido rechazado
+                            </Button>
+                          ) : (
+                            <Button variant="outline" className="rounded-full" onClick={() => void handleClaim(listing.id)}>
+                              Reclamar
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </TabsContent>
           </Tabs>

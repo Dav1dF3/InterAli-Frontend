@@ -8,44 +8,7 @@ import { SectionHeading } from "@/components/site/section-heading";
 import { listFoodListings } from "@/lib/api";
 import type { FoodListing } from "@/lib/types";
 
-const featuredFallback: FoodListing[] = [
-  {
-    id: "demo-1",
-    donor_id: "demo-donor-1",
-    title: "Paquetes de arroz",
-    description: "Lote listo para entregar con productos secos en excelente estado.",
-    quantity: 24,
-    category: "Granos",
-    expiration_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString(),
-    pickup_address: "Mercado Central 100",
-    status: "active",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "demo-2",
-    donor_id: "demo-donor-2",
-    title: "Frutas de temporada",
-    description: "Caja mixta con fruta fresca para consumo inmediato.",
-    quantity: 18,
-    category: "Frutas",
-    expiration_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString(),
-    pickup_address: "Av. Libertad 242",
-    status: "active",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "demo-3",
-    donor_id: "demo-donor-3",
-    title: "Bandejas preparadas",
-    description: "Alimentos cocinados y empacados para distribución coordinada.",
-    quantity: 12,
-    category: "Preparados",
-    expiration_date: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString(),
-    pickup_address: "Calle Norte 15",
-    status: "active",
-    created_at: new Date().toISOString(),
-  },
-];
+const featuredFallback: FoodListing[] = [];
 
 async function loadFeaturedListings() {
   try {
@@ -67,15 +30,15 @@ export default async function MarketingHomePage() {
             <Badge variant="secondary" className="rounded-full px-3 py-1">
               Donación de alimentos
             </Badge>
-            <span className="text-sm text-muted-foreground">Un flujo claro para publicar, reclamar y coordinar entregas sin ruido.</span>
+            <span className="text-sm text-muted-foreground">Un flujo simple para publicar, reclamar y coordinar entregas.</span>
           </div>
           <div className="space-y-5">
             <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-balance text-foreground sm:text-6xl lg:text-7xl">
               Conecta excedentes de comida con personas que sí los necesitan.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
-              InterAli organiza la oferta pública de alimentos, facilita la publicación de donors y el reclamo de
-              receivers con una interfaz directa, consistente y conectada al backend real.
+              InterAli ordena la oferta pública de alimentos y facilita la publicación y el reclamo con una interfaz
+              directa, consistente y fácil de usar.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -93,14 +56,14 @@ export default async function MarketingHomePage() {
 
         <Card className="overflow-hidden border-border/70 bg-card/90 shadow-xl">
           <CardHeader className="space-y-3 border-b border-border/60 bg-muted/40">
-            <CardDescription>Vista previa de la plataforma</CardDescription>
-            <CardTitle className="text-2xl">Flujo diseñado para operar sin traducciones mentales</CardTitle>
+            <CardDescription>Así se ve el recorrido</CardDescription>
+            <CardTitle className="text-2xl">Una experiencia clara desde el primer vistazo</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 p-6">
             {[
-              ["Donor publica", "Carga título, descripción, cantidad, categoría y punto de retiro."],
-              ["Receiver reclama", "La app valida autenticación, estado y expiración antes de crear el claim."],
-              ["Estado sincronizado", "El listing cambia de forma automática según el claim y su resolución."],
+              ["Publica", "Agrega título, descripción, cantidad, categoría y lugar de retiro."],
+              ["Reclama", "Revisa que la publicación siga disponible antes de pedirla."],
+              ["Sigue el avance", "Cada solicitud cambia de forma automática según su estado."],
             ].map(([title, description]) => (
               <div key={title} className="rounded-2xl border border-border/60 bg-background px-4 py-4">
                 <p className="font-semibold text-foreground">{title}</p>
@@ -115,7 +78,7 @@ export default async function MarketingHomePage() {
         <SectionHeading
           eyebrow="Disponibles ahora"
           title="Alimentos publicados recientemente"
-          description="El frontend está preparado para consumir la API pública de listings y mostrar la oferta en tiempo real."
+          description="Aquí aparecen las publicaciones más recientes para verlas de un vistazo."
           action={
             <Button asChild variant="outline">
               <Link href="/food-listings">Abrir catálogo completo</Link>
@@ -131,10 +94,10 @@ export default async function MarketingHomePage() {
       </section>
 
       <section className="rounded-3xl border border-border/70 bg-card/90 p-6">
-        <p className="text-sm font-medium text-foreground">Diseñado para dos tareas concretas</p>
+        <p className="text-sm font-medium text-foreground">Pensado para usarlo sin vueltas</p>
         <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
-          Donors publican y gestionan listings. Receivers exploran, reclaman y siguen sus solicitudes. No hay
-          funcionalidades decorativas ni pantallas vacías.
+          Quien publica comparte comida disponible. Quien necesita comida la revisa, la solicita y sigue su avance.
+          Todo está pensado para ser claro y directo.
         </p>
       </section>
     </div>

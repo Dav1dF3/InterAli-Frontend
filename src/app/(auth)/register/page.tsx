@@ -129,7 +129,7 @@ export default function RegisterPage() {
                   onClick={() => setRole(item)}
                   className="rounded-full"
                 >
-                  {item === "donor" ? "Donante" : "Receptor"}
+                  {item === "donor" ? "Publica" : "Solicita"}
                 </Button>
               ))}
             </div>
@@ -159,13 +159,13 @@ export default function RegisterPage() {
           <Badge variant="secondary" className="w-fit rounded-full px-3 py-1 text-secondary-foreground">
             Registro flexible
           </Badge>
-          <h1 className="text-4xl font-semibold tracking-tight">Crea tu perfil según tu rol en la plataforma.</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">Crea tu perfil para publicar o pedir comida.</h1>
           <p className="max-w-md text-base leading-7 text-background/75">
-            Los donantes publican comida y los receptores reclaman con un flujo claro. La plataforma valida ambos casos.
+            Elige cómo quieres participar y completa tus datos para empezar.
           </p>
         </div>
         <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm leading-7 text-background/90 backdrop-blur">
-          Un buen frontend ayuda a entender el contexto sin ruido. Aquí empieza esa experiencia.
+          Todo está pensado para que el proceso sea simple, claro y sin pasos de más.
         </div>
       </div>
       </Card>

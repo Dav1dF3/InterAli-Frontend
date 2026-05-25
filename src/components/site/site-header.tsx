@@ -31,7 +31,7 @@ export function SiteHeader() {
           </span>
           <div className="leading-tight">
             <p className="text-sm font-semibold tracking-tight text-foreground">InterAli</p>
-            <p className="text-xs text-muted-foreground">Donación de alimentos con flujo claro</p>
+            <p className="text-xs text-muted-foreground">Comida que llega a quien la necesita</p>
           </div>
         </Link>
 
@@ -51,7 +51,7 @@ export function SiteHeader() {
             <>
               <Button asChild variant="outline" size="sm" className="rounded-full">
                 <Link href="/dashboard">
-                  Ir al panel
+                  Ir a mi espacio
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>

@@ -30,7 +30,7 @@ import { useAuth } from "@/hooks/use-auth";
 const navigation = [
   { href: "/dashboard", label: "Resumen" },
   { href: "/dashboard/food-listings", label: "Mis publicaciones" },
-  { href: "/dashboard/claims", label: "Reclamos" },
+  { href: "/dashboard/claims", label: "Solicitudes" },
 ];
 
 export function PrivateHeader() {
@@ -54,8 +54,8 @@ export function PrivateHeader() {
             <AvatarFallback>{user?.full_name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "IA"}</AvatarFallback>
           </Avatar>
           <div className="leading-tight">
-            <p className="text-sm font-semibold tracking-tight text-foreground">InterAli privado</p>
-            <p className="text-xs text-muted-foreground">{isAdmin ? "Gestión global" : isDonor ? "Publicaciones" : "Exploración"}</p>
+            <p className="text-sm font-semibold tracking-tight text-foreground">Tu espacio</p>
+            <p className="text-xs text-muted-foreground">{isAdmin ? "Vista general" : isDonor ? "Publicaciones" : "Explorar comida"}</p>
           </div>
         </Link>
 
@@ -70,7 +70,7 @@ export function PrivateHeader() {
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="hidden rounded-full px-3 py-1 sm:inline-flex">
             <ShieldCheck className="mr-2 size-3.5" />
-            {isAdmin ? "Admin" : isDonor ? "Donante" : isReceiver ? "Receptor" : "Privado"}
+            {isAdmin ? "Coordinación" : isDonor ? "Publica" : isReceiver ? "Solicita" : "Tu espacio"}
           </Badge>
 
           <DropdownMenu>
@@ -86,11 +86,11 @@ export function PrivateHeader() {
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/food-listings">
                   <Plus className="mr-2 size-4" />
-                  {isDonor ? "Nueva publicación" : isAdmin ? "Gestionar publicaciones" : "Ver publicaciones"}
+                  {isDonor ? "Nueva publicación" : isAdmin ? "Ver publicaciones" : "Ver publicaciones"}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/claims">{isReceiver ? "Ver reclamos" : "Revisar reclamos"}</Link>
+                <Link href="/dashboard/claims">{isReceiver ? "Ver solicitudes" : "Revisar solicitudes"}</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleLogout()}>
@@ -123,7 +123,7 @@ export function PrivateHeader() {
                   </Button>
                 ))}
                 <Button asChild className="justify-start rounded-2xl" onClick={() => setMobileOpen(false)}>
-                  <Link href="/dashboard/food-listings">{isDonor ? "Nueva publicación" : isAdmin ? "Gestionar publicaciones" : "Ver publicaciones"}</Link>
+                  <Link href="/dashboard/food-listings">{isDonor ? "Nueva publicación" : isAdmin ? "Ver publicaciones" : "Ver publicaciones"}</Link>
                 </Button>
                 <Button variant="outline" className="justify-start rounded-2xl" onClick={() => { setMobileOpen(false); handleLogout(); }}>
                   Salir

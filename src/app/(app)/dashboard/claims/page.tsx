@@ -159,6 +159,8 @@ export default function DashboardClaimsPage() {
                       <TableCell className="text-right">
                         {isReceiver ? (
                           <span className="text-xs text-muted-foreground">Solo lectura</span>
+                        ) : claim.status !== "pending" ? (
+                          <span className="text-xs text-muted-foreground">Ya resuelto</span>
                         ) : (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
